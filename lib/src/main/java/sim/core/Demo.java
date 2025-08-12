@@ -88,12 +88,11 @@ public class Demo {
         System.out.println("  = true");
         
         // Verify the result matches expectation
-        boolean expectedResult = (true && true) || (!false);
         boolean actualResult = outputs.get(0);
         
         System.out.println("\nVerification:");
-        System.out.println("  Expected: " + expectedResult);
+        System.out.println("  Expected: true");
         System.out.println("  Actual:   " + actualResult);
-        System.out.println("  Match:    " + (expectedResult == actualResult ? "✓" : "✗"));
+        System.out.println("  Match:    " + (actualResult ? "✓" : "✗"));
     }
 }

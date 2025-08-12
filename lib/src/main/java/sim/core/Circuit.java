@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * A digital circuit that contains gates, wires, and manages signal propagation.
@@ -77,19 +76,23 @@ public class Circuit {
      * @param pin the input pin number on the gate
      */
     public void connectPrimaryInput(String name, Gate gate, int pin) {
-        // Find the gate index
-        int gateIndex = gates.indexOf(gate);
-        if (gateIndex == -1) {
-            throw new IllegalArgumentException("Gate not found in circuit: " + gate.getId());
-        }
-        
-        // Store the binding
+        // Validate input parameters
+        if (name == null || name.isBlank()) 
+            throw new IllegalArgumentException("Primary input name can't be empty");
+        if (!gates.contains(gate)) 
+            throw new IllegalArgumentException("Gate not in circuit: " + gate.getId());
+        if (pin < 0 || pin >= gate.getNumInputs())
+            throw new IllegalArgumentException("Invalid pin " + pin + " for gate " + gate.getId());
+    
+        // Create binding: associate input name with specific gate and pin
+        // If this input name doesn't exist yet, create a new list for it
         primaryInputBindings.computeIfAbsent(name, k -> new ArrayList<>())
                            .add(new InputBinding(gate, pin));
         
-        // Initialize the primary input value to false
+        // Initialize the primary input value to false (default state)
         primaryInputs.putIfAbsent(name, false);
     }
+    
     
     /**
      * Sets the value of a primary input.
