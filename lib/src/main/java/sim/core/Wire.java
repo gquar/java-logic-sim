@@ -1,5 +1,4 @@
 package sim.core;
-
 /**
  * A wire that connects the output of one gate to the input of another gate.
  * 

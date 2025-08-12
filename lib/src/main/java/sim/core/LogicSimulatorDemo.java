@@ -1,5 +1,4 @@
 package sim.core;
-
 /**
  * Demonstration class showing how to use the digital logic gates.
  * 
