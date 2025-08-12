@@ -29,10 +29,9 @@ public class Circuit {
     /** Map of primary input names to their boolean values */
     private final Map<String, Boolean> primaryInputs;
     
-    public record InputBinding(Gate gate, int pin) { }
 
     /** Map of primary input names to their gate and pin bindings */
-    private final Map<String, List<InputBinding>> primaryInputBindings;
+    private final Map<String, List<InputBinding>> primaryInputBindings = new LinkedHashMap<>();
     
     /** List of gates designated as primary outputs */
     private final List<Gate> primaryOutputs;
@@ -47,7 +46,6 @@ public class Circuit {
         this.gates = new ArrayList<>();
         this.wires = new ArrayList<>();
         this.primaryInputs = new HashMap<>();
-        this.primaryInputBindings = new LinkedHashMap<>();
         this.primaryOutputs = new ArrayList<>();
     }
     
