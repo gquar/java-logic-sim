@@ -2,8 +2,10 @@ package sim.core;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 /**
  * A digital circuit that contains gates, wires, and manages signal propagation.
@@ -12,7 +14,7 @@ import java.util.Map;
  * - Multiple gates connected by wires
  * - Primary inputs that can be set from outside the circuit
  * - Primary outputs that can be read from outside the circuit
- * - Automatic signal propagation through the circuit
+ * - Automatic signal propagation through the circuit using topological ordering
  * 
  * @author Digital Logic Simulator
  * @version 1.0
@@ -28,7 +30,6 @@ public class Circuit {
     /** Map of primary input names to their boolean values */
     private final Map<String, Boolean> primaryInputs;
     
-
     /** Map of primary input names to their gate and pin bindings */
     private final Map<String, List<InputBinding>> primaryInputBindings = new LinkedHashMap<>();
     
@@ -93,7 +94,6 @@ public class Circuit {
         primaryInputs.putIfAbsent(name, false);
     }
     
-    
     /**
      * Sets the value of a primary input.
      * 
@@ -130,64 +130,110 @@ public class Circuit {
     }
     
     /**
-     * Propagates signals through the circuit until stable or max iterations reached.
+     * Computes a topological ordering of gates using Kahn's algorithm.
+     * 
+     * <p>This method builds an adjacency list from the wires, computes in-degrees
+     * for each gate, and returns gates in dependency order. If a cycle is detected,
+     * it throws an IllegalStateException.
+     * 
+     * @return list of gates in topological order
+     * @throws IllegalStateException if a combinational cycle is detected
+     */
+    public List<Gate> topologicalOrder() {
+        // Build adjacency list: gate -> list of gates it connects to
+        Map<Gate, List<Gate>> adjacencyList = new HashMap<>();
+        Map<Gate, Integer> inDegree = new HashMap<>();
+        
+        // Initialize adjacency list and in-degree for all gates
+        for (Gate gate : gates) {
+            adjacencyList.put(gate, new ArrayList<>());
+            inDegree.put(gate, 0);
+        }
+        
+        // Build adjacency list from wires and compute in-degrees
+        for (Wire wire : wires) {
+            Gate fromGate = wire.getFromGate();
+            Gate toGate = wire.getToGate();
+            
+            adjacencyList.get(fromGate).add(toGate);
+            inDegree.put(toGate, inDegree.get(toGate) + 1);
+        }
+        
+        // Kahn's algorithm: find gates with no incoming edges
+        Queue<Gate> queue = new LinkedList<>();
+        for (Gate gate : gates) {
+            if (inDegree.get(gate) == 0) {
+                queue.offer(gate);
+            }
+        }
+        
+        List<Gate> topologicalOrder = new ArrayList<>();
+        int processedCount = 0;
+        
+        while (!queue.isEmpty()) {
+            Gate currentGate = queue.poll();
+            topologicalOrder.add(currentGate);
+            processedCount++;
+            
+            // Remove current gate's outgoing edges and update in-degrees
+            for (Gate neighbor : adjacencyList.get(currentGate)) {
+                inDegree.put(neighbor, inDegree.get(neighbor) - 1);
+                if (inDegree.get(neighbor) == 0) {
+                    queue.offer(neighbor);
+                }
+            }
+        }
+        
+        // Check if all gates were processed (no cycles)
+        if (processedCount != gates.size()) {
+            throw new IllegalStateException("Combinational cycle detected; cannot topologically sort");
+        }
+        
+        return topologicalOrder;
+    }
+    
+    /**
+     * Propagates signals through the circuit using topological ordering.
      * 
      * <p>This method:
-     * 1. Copies primary input values to bound gate input pins
-     * 2. Evaluates all gates
-     * 3. Pushes outputs along wires to downstream inputs
-     * 4. Repeats until no changes occur or max iterations reached
+     * 1. Applies primary input values to their bound gate input pins
+     * 2. Evaluates gates once in topological order (no iterative settling)
+     * 3. Pushes wire values after each gate evaluation for immediate propagation
+     * 
+     * <p>Choice: Push wire values after each gate evaluation rather than in a post-pass
+     * because it ensures that downstream gates receive updated values immediately,
+     * maintaining the correct dependency order and avoiding the need for multiple passes.
      */
     public void propagate() {
-        int iterations = 0;
-        boolean changes;
+        // Step 1: Apply primary input values to bound gate input pins
+        for (Map.Entry<String, Boolean> entry : primaryInputs.entrySet()) {
+            String inputName = entry.getKey();
+            Boolean inputValue = entry.getValue();
+            
+            List<InputBinding> bindings = primaryInputBindings.get(inputName);
+            if (bindings != null) {
+                for (InputBinding binding : bindings) {
+                    binding.gate().setInput(binding.pin(), inputValue);
+                }
+            }
+        }
         
-        do {
-            changes = false;
-            iterations++;
+        // Step 2: Get topological ordering of gates
+        List<Gate> topoOrder = topologicalOrder();
+        
+        // Step 3: Evaluate gates in topological order and push wire values immediately
+        for (Gate gate : topoOrder) {
+            // Evaluate the gate to compute its outputs
+            gate.evaluate();
             
-            // Copy primary input values to bound gate input pins
-            for (Map.Entry<String, Boolean> entry : primaryInputs.entrySet()) {
-                String inputName = entry.getKey();
-                Boolean inputValue = entry.getValue();
-                
-                List<InputBinding> bindings = primaryInputBindings.get(inputName);
-                if (bindings != null) {
-                    for (InputBinding binding : bindings) {
-                        binding.gate().setInput(binding.pin(), inputValue);
-                    }
-                }
-            }
-            
-            // Evaluate all gates and track changes
-            for (Gate gate : gates) {
-                // Store old output values
-                List<Boolean> oldOutputs = new ArrayList<>();
-                for (int i = 0; i < gate.getNumOutputs(); i++) {
-                    oldOutputs.add(gate.getOutput(i));
-                }
-                
-                // Evaluate the gate
-                gate.evaluate();
-                
-                // Check if any output changed
-                for (int i = 0; i < gate.getNumOutputs(); i++) {
-                    if (!oldOutputs.get(i).equals(gate.getOutput(i))) {
-                        changes = true;
-                    }
-                }
-            }
-            
-            // Push outputs along wires to downstream inputs
+            // Push wire values from this gate's outputs to downstream inputs
+            // This ensures immediate propagation and maintains dependency order
             for (Wire wire : wires) {
-                boolean wireValue = wire.read();
-                wire.getToGate().setInput(wire.getToPin(), wireValue);
+                if (wire.getFromGate() == gate) {
+                    boolean wireValue = wire.read();
+                    wire.getToGate().setInput(wire.getToPin(), wireValue);
+                }
             }
-            
-        } while (changes && iterations < MAX_ITERATIONS);
-        
-        if (iterations >= MAX_ITERATIONS) {
-            System.out.println("Warning: Circuit propagation stopped after " + MAX_ITERATIONS + " iterations");
         }
     }
     
