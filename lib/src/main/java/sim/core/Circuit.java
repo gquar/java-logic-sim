@@ -4,7 +4,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.ArrayDeque;
+import java.util.Queue;
+
 
 /**
  * A digital circuit that contains gates, wires, and manages signal propagation.
@@ -61,6 +63,50 @@ public class Circuit {
         gates.add(gate);
         return gates.size() - 1;
     }
+    
+
+/**
+ * Returns a topological ordering of gates using Kahn's algorithm.
+ * Throws IllegalStateException if the circuit contains a cycle.
+ */
+public List<Gate> topologicalOrder() {
+    // indegree for each gate
+    Map<Gate, Integer> indegree = new HashMap<>();
+    for (Gate g : gates) indegree.put(g, 0);
+
+    // compute indegree from wires: fromGate -> toGate
+    for (Wire w : wires) {
+        Gate to = w.getToGate();
+        indegree.put(to, indegree.get(to) + 1);
+    }
+
+    // queue of nodes with indegree 0
+    Queue<Gate> q = new ArrayDeque<>();
+    for (Gate g : gates) {
+        if (indegree.get(g) == 0) q.add(g);
+    }
+
+    List<Gate> order = new ArrayList<>();
+    while (!q.isEmpty()) {
+        Gate u = q.remove();
+        order.add(u);
+
+        // for each edge u -> v, decrement indegree(v)
+        for (Wire w : wires) {
+            if (w.getFromGate() == u) {
+                Gate v = w.getToGate();
+                indegree.put(v, indegree.get(v) - 1);
+                if (indegree.get(v) == 0) q.add(v);
+            }
+        }
+    }
+
+    if (order.size() != gates.size()) {
+        throw new IllegalStateException("Cycle detected in circuit (graph is not a DAG)");
+    }
+    return order;
+}
+
     
     /**
      * Adds a wire to the circuit.
