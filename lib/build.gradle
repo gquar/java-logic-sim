@@ -18,9 +18,28 @@ java {
 
 application {
     // Choose the class that has your main(String[] args)
-    mainClass = 'sim.core.LogicSimulatorDemo'
+    mainClass = 'sim.core.BenchMain'
+    
     // If your main is in Demo instead, use: 'sim.core.Demo'
+    
 }
+
+test {
+    useJUnitPlatform()
+
+    // Allow running a subset of tests by tag, e.g. -PincludeTags=bench
+    if (project.hasProperty('includeTags')) {
+        systemProperty 'junit.jupiter.tags', project.property('includeTags')
+    }
+
+    // Show System.out from tests
+    testLogging {
+        events "passed", "skipped", "failed", "standardOut"
+        showStandardStreams = true
+    }
+}
+
+
 
 
 repositories {

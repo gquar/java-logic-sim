@@ -42,6 +42,25 @@ public class Circuit {
     /** Maximum number of propagation iterations to prevent infinite loops */
     private static final int MAX_ITERATIONS = 1000;
     
+// Fast edge representation for outgoing connections
+private static final class Edge {
+    final Gate to;
+    final int toPin;
+    final int fromPin;
+    Edge(Gate to, int toPin, int fromPin) {
+        this.to = to; this.toPin = toPin; this.fromPin = fromPin;
+    }
+}
+
+// Index of each gate for O(1) lookups in topo/adjacency
+private final Map<Gate, Integer> gateIndex = new HashMap<>();
+private final List<List<Edge>> outgoing = new ArrayList<>();
+
+// Cache topo order; recompute only when structure changes
+private List<Gate> topoOrderCache = null;
+private boolean structureDirty = true;
+
+
     /**
      * Constructs a new empty circuit.
      */
@@ -61,8 +80,13 @@ public class Circuit {
      */
     public int addGate(Gate gate) {
         gates.add(gate);
-        return gates.size() - 1;
+        int idx = gates.size() - 1;
+        gateIndex.put(gate, idx);
+        outgoing.add(new ArrayList<>());
+        structureDirty = true;
+        return idx;
     }
+    
     
 
 /**
@@ -70,42 +94,43 @@ public class Circuit {
  * Throws IllegalStateException if the circuit contains a cycle.
  */
 public List<Gate> topologicalOrder() {
-    // indegree for each gate
-    Map<Gate, Integer> indegree = new HashMap<>();
-    for (Gate g : gates) indegree.put(g, 0);
-
-    // compute indegree from wires: fromGate -> toGate
-    for (Wire w : wires) {
-        Gate to = w.getToGate();
-        indegree.put(to, indegree.get(to) + 1);
+    if (!structureDirty && topoOrderCache != null) {
+        return topoOrderCache;
     }
+    int n = gates.size();
+    int[] indeg = new int[n];
 
-    // queue of nodes with indegree 0
-    Queue<Gate> q = new ArrayDeque<>();
-    for (Gate g : gates) {
-        if (indegree.get(g) == 0) q.add(g);
-    }
-
-    List<Gate> order = new ArrayList<>();
-    while (!q.isEmpty()) {
-        Gate u = q.remove();
-        order.add(u);
-
-        // for each edge u -> v, decrement indegree(v)
-        for (Wire w : wires) {
-            if (w.getFromGate() == u) {
-                Gate v = w.getToGate();
-                indegree.put(v, indegree.get(v) - 1);
-                if (indegree.get(v) == 0) q.add(v);
-            }
+    // compute indegrees from outgoing lists
+    for (int i = 0; i < n; i++) {
+        for (Edge e : outgoing.get(i)) {
+            int j = gateIndex.get(e.to);
+            indeg[j]++;
         }
     }
 
-    if (order.size() != gates.size()) {
-        throw new IllegalStateException("Cycle detected in circuit (graph is not a DAG)");
+    java.util.ArrayDeque<Integer> q = new java.util.ArrayDeque<>();
+    for (int i = 0; i < n; i++) if (indeg[i] == 0) q.add(i);
+
+    java.util.ArrayList<Gate> order = new java.util.ArrayList<>(n);
+    int processed = 0;
+    while (!q.isEmpty()) {
+        int i = q.removeFirst();
+        order.add(gates.get(i));
+        processed++;
+        for (Edge e : outgoing.get(i)) {
+            int j = gateIndex.get(e.to);
+            if (--indeg[j] == 0) q.add(j);
+        }
     }
-    return order;
+
+    if (processed != n) {
+        throw new IllegalStateException("Cycle detected");
+    }
+    topoOrderCache = order;
+    structureDirty = false;
+    return topoOrderCache;
 }
+
 
     
     /**
@@ -115,7 +140,16 @@ public List<Gate> topologicalOrder() {
      */
     public void addWire(Wire wire) {
         wires.add(wire);
+    
+        Integer fromIdx = gateIndex.get(wire.getFromGate());
+        Integer toIdx   = gateIndex.get(wire.getToGate());
+        if (fromIdx == null || toIdx == null) {
+            throw new IllegalArgumentException("Wire connects a gate not in this circuit");
+        }
+        outgoing.get(fromIdx).add(new Edge(wire.getToGate(), wire.getToPin(), wire.getFromPin()));
+        structureDirty = true;
     }
+    
     
     /**
      * Binds a primary input name to a specific gate's input pin.
@@ -184,57 +218,30 @@ public List<Gate> topologicalOrder() {
      * 4. Repeats until no changes occur or max iterations reached
      */
     public void propagate() {
-        int iterations = 0;
-        boolean changes;
-        
-        do {
-            changes = false;
-            iterations++;
-            
-            // Copy primary input values to bound gate input pins
-            for (Map.Entry<String, Boolean> entry : primaryInputs.entrySet()) {
-                String inputName = entry.getKey();
-                Boolean inputValue = entry.getValue();
-                
-                List<InputBinding> bindings = primaryInputBindings.get(inputName);
-                if (bindings != null) {
-                    for (InputBinding binding : bindings) {
-                        binding.gate().setInput(binding.pin(), inputValue);
-                    }
+        // 1) Apply primary inputs to bound pins (usually small; OK to use maps here)
+        for (Map.Entry<String, Boolean> entry : primaryInputs.entrySet()) {
+            List<InputBinding> bindings = primaryInputBindings.get(entry.getKey());
+            if (bindings != null) {
+                boolean val = entry.getValue();
+                for (InputBinding b : bindings) {
+                    b.gate().setInput(b.pin(), val);
                 }
             }
-            
-            // Evaluate all gates and track changes
-            for (Gate gate : gates) {
-                // Store old output values
-                List<Boolean> oldOutputs = new ArrayList<>();
-                for (int i = 0; i < gate.getNumOutputs(); i++) {
-                    oldOutputs.add(gate.getOutput(i));
-                }
-                
-                // Evaluate the gate
-                gate.evaluate();
-                
-                // Check if any output changed
-                for (int i = 0; i < gate.getNumOutputs(); i++) {
-                    if (!oldOutputs.get(i).equals(gate.getOutput(i))) {
-                        changes = true;
-                    }
-                }
+        }
+    
+        // 2) Evaluate once in topo order and push outputs along only each gate's outgoing edges
+        List<Gate> order = topologicalOrder();
+        for (Gate g : order) {
+            g.evaluate();
+            int fromIdx = gateIndex.get(g);
+            for (Edge e : outgoing.get(fromIdx)) {
+                boolean outVal = g.getOutput(e.fromPin);
+                e.to.setInput(e.toPin, outVal);
             }
-            
-            // Push outputs along wires to downstream inputs
-            for (Wire wire : wires) {
-                boolean wireValue = wire.read();
-                wire.getToGate().setInput(wire.getToPin(), wireValue);
-            }
-            
-        } while (changes && iterations < MAX_ITERATIONS);
-        
-        if (iterations >= MAX_ITERATIONS) {
-            System.out.println("Warning: Circuit propagation stopped after " + MAX_ITERATIONS + " iterations");
         }
     }
+    
+    
     
     /**
      * Gets the list of gates in the circuit.
