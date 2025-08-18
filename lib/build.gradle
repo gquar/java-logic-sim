@@ -18,7 +18,7 @@ java {
 
 application {
     // Choose the class that has your main(String[] args)
-    mainClass = 'sim.core.BenchMain'
+    mainClass = 'sim.demo.GraphvizDemo'
     
     // If your main is in Demo instead, use: 'sim.core.Demo'
     
@@ -70,4 +70,8 @@ java {
 tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
+}
+tasks.register('logicDot', JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'sim.demo.GraphvizDemo'
 }
