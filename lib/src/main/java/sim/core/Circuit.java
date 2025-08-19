@@ -260,4 +260,22 @@ public List<Gate> topologicalOrder() {
     public List<Wire> getWires() {
         return new ArrayList<>(wires);
     }
+
+    /**
+     * Returns a copy of the primary input bindings map.
+     *
+     * <p>The returned map preserves insertion order of primary inputs but is a
+     * shallow copy. Modifications to the returned map or its lists will not
+     * affect the circuit's internal state.</p>
+     */
+    public Map<String, List<InputBinding>> getPrimaryInputBindings() {
+        return new LinkedHashMap<>(primaryInputBindings);
+    }
+
+    /**
+     * Returns a copy of the list of gates designated as primary outputs.
+     */
+    public List<Gate> getPrimaryOutputs() {
+        return new ArrayList<>(primaryOutputs);
+    }
 }
