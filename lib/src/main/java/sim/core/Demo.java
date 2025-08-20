@@ -1,8 +1,8 @@
 package sim.core;
 
-import sim.core.dot.CircuitDotExporter;
-
 import java.nio.file.Path;
+
+import sim.dot.CircuitDotExporter;
 
 public class Demo {
 	public static void main(String[] args) throws Exception {

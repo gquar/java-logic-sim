@@ -4,8 +4,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayDeque;
-import java.util.Queue;
+import java.util.Collections;
+// import java.util.ArrayDeque;
+// import java.util.Queue;
 
 
 /**
@@ -251,6 +252,16 @@ public List<Gate> topologicalOrder() {
     public List<Gate> getGates() {
         return new ArrayList<>(gates);
     }
+
+
+public Map<String, List<InputBinding>> getPrimaryInputBindings() {
+    return Collections.unmodifiableMap(primaryInputBindings);
+}
+
+public List<Gate> getPrimaryOutputs() {
+    return Collections.unmodifiableList(primaryOutputs);
+}
+
     
     /**
      * Gets the list of wires in the circuit.

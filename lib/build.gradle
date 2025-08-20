@@ -18,7 +18,7 @@ java {
 
 application {
     // Choose the class that has your main(String[] args)
-    mainClass = 'sim.demo.GraphvizDemo'
+    mainClass = 'sim.core.BenchMain'
     
     // If your main is in Demo instead, use: 'sim.core.Demo'
     
@@ -48,8 +48,10 @@ repositories {
 }
 
 dependencies {
+        testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+
     // Use JUnit Jupiter for testing.
-    testImplementation libs.junit.jupiter
+    // testImplementation libs.junit.jupiter
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
@@ -57,7 +59,7 @@ dependencies {
     api libs.commons.math3
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
-    implementation libs.guava
+    // implementation libs.guava
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -71,7 +73,34 @@ tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
 }
+// tasks.register('logicDot', JavaExec) {
+//     classpath = sourceSets.main.runtimeClasspath
+//     mainClass = 'sim.demo.GraphvizDemo'
+// }
+// tasks.register('faDot', JavaExec) {
+//     group = 'demo'
+//     description = 'Generate Full Adder DOT and PNG via GraphvizFADemo'
+//     classpath = sourceSets.main.runtimeClasspath
+// //     mainClass = 'sim.demo.GraphvizFADemo'
+// }
+
+// ---- Demo: generate Full Adder DOT + PNG ----
 tasks.register('logicDot', JavaExec) {
+    group = 'demo'
+    description = 'Generate logic DOT/PNG via GraphvizDemo'
     classpath = sourceSets.main.runtimeClasspath
     mainClass = 'sim.demo.GraphvizDemo'
+}
+
+tasks.register('faDot', JavaExec) {
+    group = 'demo'
+    description = 'Generate Full Adder DOT/PNG via GraphvizFADemo'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'sim.demo.GraphvizFADemo'
+}
+
+tasks.register('dotAll') {
+    group = 'demo'
+    description = 'Generate both logic and full-adder Graphviz images'
+    dependsOn 'logicDot', 'faDot'
 }
