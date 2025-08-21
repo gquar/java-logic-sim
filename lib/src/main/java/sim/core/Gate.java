@@ -67,12 +67,12 @@ public abstract class Gate {
      */
     public void setInput(int pin, boolean value) {
         if (pin < 0 || pin >= numInputs) {
-            throw new IllegalArgumentException("Invalid input pin " + pin + " for gate " + id +
-                                               " (expects 0.." + (numInputs - 1) + ")");
+            throw new IllegalArgumentException(
+                "Input pin " + pin + " is out of range. Valid pins: 0 to " + (numInputs - 1)
+            );
         }
         inputs.set(pin, value);
     }
-    
     
     /**
      * Gets the value of a specific output pin.

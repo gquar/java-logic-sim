@@ -43,18 +43,11 @@ test {
 }
 
 // --- Demo tasks to render diagrams and auto-open PNGs ---
-def os = org.gradle.internal.os.OperatingSystem.current()
-
 tasks.register('logicDot', JavaExec) {
     group = 'demo'
     description = 'Generate logic.png via GraphvizDemo'
     classpath = sourceSets.main.runtimeClasspath
     mainClass = 'sim.demo.GraphvizDemo'
-    doLast {
-        if (os.isMacOsX()) { exec { commandLine 'open', 'docs/logic.png' } }
-        else if (os.isLinux()) { exec { commandLine 'xdg-open', 'docs/logic.png' } }
-        else if (os.isWindows()) { exec { commandLine 'cmd', '/c', 'start', '', 'docs\\logic.png' } }
-    }
 }
 
 tasks.register('faDot', JavaExec) {
@@ -62,9 +55,10 @@ tasks.register('faDot', JavaExec) {
     description = 'Generate fa.png via GraphvizFADemo'
     classpath = sourceSets.main.runtimeClasspath
     mainClass = 'sim.demo.GraphvizFADemo'
-    doLast {
-        if (os.isMacOsX()) { exec { commandLine 'open', 'docs/fa.png' } }
-        else if (os.isLinux()) { exec { commandLine 'xdg-open', 'docs/fa.png' } }
-        else if (os.isWindows()) { exec { commandLine 'cmd', '/c', 'start', '', 'docs\\fa.png' } }
-    }
+}
+
+tasks.register('dotAll') {
+    group = 'demo'
+    description = 'Generate both logic and full-adder Graphviz images'
+    dependsOn 'logicDot', 'faDot'
 }

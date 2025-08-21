@@ -1,10 +1,12 @@
 # Digital Logic Simulator (Java)
 
+![CI](https://github.com/gquar/java-logic-sim/actions/workflows/ci.yml/badge.svg)
+
 **Combinational logic simulator** with gates, wires, named primary I/O, and a deterministic **topological evaluation** engine. Built with **Java + Gradle + JUnit**, emphasizing **DSA**, **SWE best practices**, and concepts adjacent to **FPGA/EDA** flows. 
 
-**Performance note:** Replaced an iterative “until stable” loop with a single-pass **topological evaluation** (Kahn’s algorithm) and immediate wire propagation. Added explicit **cycle detection**. Result: ~195× speedup on 1k-gate DAG (1509 ms → 7.7 ms for 100 runs).
+**Performance note:** Replaced an iterative "until stable" loop with a single-pass **topological evaluation** (Kahn's algorithm) and immediate wire propagation. Added explicit **cycle detection**. Result: ~195× speedup on 1k-gate DAG (1509 ms → 7.7 ms for 100 runs).
 
-
+_Tags_: Java, DSA, Graph Algorithms, ECE, FPGA-adjacent, Gradle, JUnit
 
 ![Java](https://img.shields.io/badge/Java-21%2B%20(tested%20on%2024)-blue)
 ![Build](https://img.shields.io/badge/Build-Gradle-green)

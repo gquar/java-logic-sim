@@ -116,11 +116,7 @@ public class CircuitTopoTest {
         // Verify the exception message
         String message = exception.getMessage();
         assertTrue(
-<<<<<<< HEAD
             message.contains("Cycle detected") || 
-=======
-            message.contains("Combinational cycle detected") || 
->>>>>>> origin/feat/composite-gates
             message.contains("cannot topologically sort"),
             "Exception message should indicate cycle detection"
         );

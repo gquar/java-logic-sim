@@ -1,4 +1,4 @@
-package sim.core.dot;
+package sim.dot;
 
 import sim.core.Circuit;
 import sim.core.Gate;

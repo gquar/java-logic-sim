@@ -1,0 +1,23 @@
+digraph Logic {
+  graph [rankdir=LR, nodesep=0.4, ranksep=0.6];
+  node  [shape=box, style=filled, fillcolor="#f6f6f6", color="#555555", fontname=Helvetica, fontsize=10];
+  edge  [color="#333333", arrowsize=0.7];
+
+  in_A [label="A\nINPUT", shape=diamond, fillcolor="#e8f5e9", color="#2e7d32", penwidth=1.5];
+  in_B [label="B\nINPUT", shape=diamond, fillcolor="#e8f5e9", color="#2e7d32", penwidth=1.5];
+  in_C [label="C\nINPUT", shape=diamond, fillcolor="#e8f5e9", color="#2e7d32", penwidth=1.5];
+
+  g_AND [label="And", fillcolor="#fff4e5"];
+  g_NOT [label="Not", fillcolor="#fce4ec"];
+  g_OR [label="Or", fillcolor="#e8eaf6"];
+
+  in_A -> g_AND [taillabel="A", headlabel="in0", labeldistance=2, labelfontsize=9];
+  in_B -> g_AND [taillabel="B", headlabel="in1", labeldistance=2, labelfontsize=9];
+  in_C -> g_NOT [taillabel="C", headlabel="in0", labeldistance=2, labelfontsize=9];
+
+  g_AND -> g_OR [headlabel="in0", taillabel="out0", labeldistance=2, labelfontsize=9];
+  g_NOT -> g_OR [headlabel="in1", taillabel="out0", labeldistance=2, labelfontsize=9];
+
+  out_OR [label="OUT = 1", shape=oval, fillcolor="#e3f2fd", color="#1565c0", penwidth=1.8];
+  g_OR -> out_OR [color="#1565c0", penwidth=2.2];
+}
