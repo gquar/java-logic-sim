@@ -44,9 +44,9 @@ public final class GraphvizExporter {
 
         // Gates (label = TYPE [+ id if different])
         for (Gate g : c.getGates()) {
-            String type = gateType(g); // AND/OR/NOT/XOR
+            String type = shortType(g); // AND/OR/NOT/XOR
             String id = g.getId();
-            String label = id.equalsIgnoreCase(type) ? type : (type + "\\n" + escape(id));
+            String label = id.equalsIgnoreCase(type) ? type : (type + "\\n(" + escape(id) + ")");
             String color = colorFor(g);
             sb.append("  ").append(gNode(g)).append(" ")
               .append("[label=\"").append(label).append("\", fillcolor=\"").append(color).append("\"];\n");
@@ -116,9 +116,10 @@ public final class GraphvizExporter {
     }
 
     // ---- helpers ----
-    private static String gateType(Gate g) {
-        String t = g.getClass().getSimpleName();
-        return t.endsWith("Gate") ? t.substring(0, t.length() - 4) : t;
+    private static String shortType(Gate g) {
+        String n = g.getClass().getSimpleName();
+        if (n.endsWith("Gate")) n = n.substring(0, n.length()-4);
+        return n.toUpperCase();
     }
     private static String gNode(Gate g) { return "g_" + sanitize(g.getId()); }
     private static String inNode(String name) { return "in_" + sanitize(name); }

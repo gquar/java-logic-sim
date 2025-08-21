@@ -1,5 +1,7 @@
 # Digital Logic Simulator (Java)
 
+_Current release_: **v0.1.0**
+
 ![CI](https://github.com/gquar/java-logic-sim/actions/workflows/ci.yml/badge.svg)
 
 **Combinational logic simulator** with gates, wires, named primary I/O, and a deterministic **topological evaluation** engine. Built with **Java + Gradle + JUnit**, emphasizing **DSA**, **SWE best practices**, and concepts adjacent to **FPGA/EDA** flows. 
