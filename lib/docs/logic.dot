@@ -7,9 +7,9 @@ digraph Logic {
   in_B [label="B\nINPUT", shape=diamond, fillcolor="#e8f5e9", color="#2e7d32", penwidth=1.5];
   in_C [label="C\nINPUT", shape=diamond, fillcolor="#e8f5e9", color="#2e7d32", penwidth=1.5];
 
-  g_AND [label="And", fillcolor="#fff4e5"];
-  g_NOT [label="Not", fillcolor="#fce4ec"];
-  g_OR [label="Or", fillcolor="#e8eaf6"];
+  g_AND [label="AND", fillcolor="#fff4e5"];
+  g_NOT [label="NOT", fillcolor="#fce4ec"];
+  g_OR [label="OR", fillcolor="#e8eaf6"];
 
   in_A -> g_AND [taillabel="A", headlabel="in0", labeldistance=2, labelfontsize=9];
   in_B -> g_AND [taillabel="B", headlabel="in1", labeldistance=2, labelfontsize=9];

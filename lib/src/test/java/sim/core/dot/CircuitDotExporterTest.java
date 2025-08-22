@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import sim.core.*;
+import sim.dot.CircuitDotExporter;
 
 public class CircuitDotExporterTest {
 	private static String normalize(String s) {

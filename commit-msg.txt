@@ -1,0 +1,69 @@
+feat(composite+viz+bench): Tier-A polish — composite adders, topo eval perf, Graphviz with live values, README, tests
+
+Highlights
+- Composite gates: HalfAdder + FullAdder built from primitives (XOR/AND/OR) with clean wiring helpers.
+- Engine perf: switched from “until-stable” iteration to Kahn’s topological order + immediate wire propagation; explicit cycle detection.
+- Visualization: Graphviz exporter with deduped labels, colored output edges by value, and live value labels on ovals (e.g., “SUM = 1”).
+- Demos & Tasks: :lib:logicDot and :lib:faDot generate PNGs (auto-open on macOS/Linux/Windows).
+- Tests & Benchmarks: exhaustive adder truth tables; size-scaling bench with warm-up; README tables + legend.
+- Docs: recruiter-facing README, issues log, license.
+
+Composite gates (sim.core.composite)
+- HalfAdder(A,B) → SUM = A ⊕ B, CARRY = A · B.
+- FullAdder(A,B,Cin) → SUM = A ⊕ B ⊕ Cin, Cout = majority(A,B,Cin) (implemented via two ANDs into an OR).
+- Truth-table tests for HA/FA cover all input combinations.
+- Small wiring helper ensures consistent pin usage for XOR/AND/OR.
+
+Core engine changes
+- Deterministic evaluation via Kahn’s algorithm (O(V+E)).
+- Immediate propagation: gate outputs push to downstream inputs as soon as evaluate() completes.
+- Cycle detection: if processed < total, throws IllegalStateException("Cycle detected").
+- Public API consistency: connectPrimaryInput(name, gate, pin), addPrimaryOutput(gate), readPrimaryOutputs().
+
+Performance
+- Before → After (1k gates × 100 runs):
+  - Total: 1509.101 ms → 7.728 ms
+  - Avg/run: 15.0910 ms → 0.0773 ms
+  - Speedup: ~195×
+- Scaling bench (median of 5 repeats, 500 runs/size, warm-up 200):
+  | Gates | Median total (ms) | Median avg per run (ms) |
+  |------:|------------------:|------------------------:|
+  |   100 | 1.603             | 0.003206                |
+  |   200 | 3.061             | 0.006122                |
+  |   500 | 3.225             | 0.006449                |
+  |  1000 | 6.340             | 0.012680                |
+  |  2000 | 12.212            | 0.024425                |
+  → Linear-time trend per gate visible from 500–2000.
+
+Graphviz exporter (sim.dot)
+- Dedup labels in gate boxes (TYPE only; include id on a second line only if it differs).
+- Primary inputs = green diamonds; primary outputs = blue ovals.
+- Output ovals show resolved values (e.g., “SUM = 1”, “Cout = 0”).
+- Output-driving edge colored/thickened by value (blue/bold=1, gray/normal=0).
+- writeDotAndPng(c, dot, png, Map<Gate,String> outputNames) supports named outputs.
+
+Demos & tasks (lib/)
+- GraphvizDemo → docs/logic.png (“(A AND B) OR (NOT C)”).
+- GraphvizFADemo → docs/fa.png (Full Adder), outputs named “SUM” and “Cout”.
+- lib/build.gradle defines:
+  - logicDot (JavaExec, mainClass=sim.demo.GraphvizDemo)
+  - faDot    (JavaExec, mainClass=sim.demo.GraphvizFADemo)
+- Demos auto-open generated PNGs (open/xdg-open/start).
+
+Tests
+- CompositeGatesTest: HA/FA exhaustive truth tables.
+- Existing XOR truth-table; cycle negative test (assertThrows with message).
+
+Docs
+- README: features, design notes (topo order, cycle detection), visuals with legend, perf table, roadmap.
+- docs/issues-log.md: curated troubleshooting timeline (topo order migration, JIT warm-up, cycle detection, Gradle task fixes, Graphviz label dedup, auto-open).
+- LICENSE: MIT.
+
+Breaking changes
+- Topological evaluation replaces any previous “until stable” semantics for combinational DAGs; sequential behavior (if added later) will use explicit ticks.
+
+Roadmap
+- Netlist DSL + CLI loader
+- D flip-flop + tick() (sequential)
+- Critical path (longest path in DAG)
+- GitHub Actions CI (Java 21 matrix)

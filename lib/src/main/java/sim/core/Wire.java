@@ -1,5 +1,4 @@
 package sim.core;
-
 /**
  * A wire that connects the output of one gate to the input of another gate.
  * 
@@ -23,7 +22,7 @@ public class Wire {
     /** The input pin number on the destination gate */
     private final int toPin;
     
-    /**
+    /** 
      * Constructs a new wire connecting two gates.
      * 
      * @param fromGate the source gate
@@ -32,27 +31,20 @@ public class Wire {
      * @param toPin the input pin number on the destination gate
      * @throws IllegalArgumentException if pin numbers are out of range
      */
-    public Wire(Gate fromGate, int fromPin, Gate toGate, int toPin) {
-        // Validate pin ranges
-        if (fromPin < 0 || fromPin >= fromGate.getNumOutputs()) {
-            throw new IllegalArgumentException(
-                "Output pin " + fromPin + " is out of range for gate " + fromGate.getId() + 
-                ". Valid pins: 0 to " + (fromGate.getNumOutputs() - 1)
-            );
-        }
-        
-        if (toPin < 0 || toPin >= toGate.getNumInputs()) {
-            throw new IllegalArgumentException(
-                "Input pin " + toPin + " is out of range for gate " + toGate.getId() + 
-                ". Valid pins: 0 to " + (toGate.getNumInputs() - 1)
-            );
-        }
-        
-        this.fromGate = fromGate;
+    
+    public Wire(Gate from, int fromPin, Gate to, int toPin) {
+        if (from == null || to == null) throw new IllegalArgumentException("Wire endpoints cannot be null");
+        if (fromPin < 0 || fromPin >= from.getNumOutputs())
+            throw new IllegalArgumentException("Invalid fromPin " + fromPin + " for gate " + from.getId());
+        if (toPin < 0 || toPin >= to.getNumInputs())
+            throw new IllegalArgumentException("Invalid toPin " + toPin + " for gate " + to.getId());
+    
+        this.fromGate = from;
         this.fromPin = fromPin;
-        this.toGate = toGate;
+        this.toGate = to;
         this.toPin = toPin;
     }
+    
     
     /**
      * Reads the current value from the source gate's output pin.

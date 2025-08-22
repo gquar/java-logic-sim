@@ -1,0 +1,32 @@
+digraph Logic {
+  graph [rankdir=LR, nodesep=0.4, ranksep=0.6];
+  node  [shape=box, style=filled, fillcolor="#f6f6f6", color="#555555", fontname=Helvetica, fontsize=10];
+  edge  [color="#333333", arrowsize=0.7];
+
+  in_A [label="A\nINPUT", shape=diamond, fillcolor="#e8f5e9", color="#2e7d32", penwidth=1.5];
+  in_B [label="B\nINPUT", shape=diamond, fillcolor="#e8f5e9", color="#2e7d32", penwidth=1.5];
+  in_Cin [label="Cin\nINPUT", shape=diamond, fillcolor="#e8f5e9", color="#2e7d32", penwidth=1.5];
+
+  g_FA_X1 [label="XOR\n(FA_X1)", fillcolor="#e0f7fa"];
+  g_FA_A1 [label="AND\n(FA_A1)", fillcolor="#fff4e5"];
+  g_FA_X2 [label="XOR\n(FA_X2)", fillcolor="#e0f7fa"];
+  g_FA_A2 [label="AND\n(FA_A2)", fillcolor="#fff4e5"];
+  g_FA_OR [label="OR\n(FA_OR)", fillcolor="#e8eaf6"];
+
+  in_A -> g_FA_X1 [taillabel="A", headlabel="in0", labeldistance=2, labelfontsize=9];
+  in_A -> g_FA_A1 [taillabel="A", headlabel="in0", labeldistance=2, labelfontsize=9];
+  in_B -> g_FA_X1 [taillabel="B", headlabel="in1", labeldistance=2, labelfontsize=9];
+  in_B -> g_FA_A1 [taillabel="B", headlabel="in1", labeldistance=2, labelfontsize=9];
+  in_Cin -> g_FA_X2 [taillabel="Cin", headlabel="in1", labeldistance=2, labelfontsize=9];
+  in_Cin -> g_FA_A2 [taillabel="Cin", headlabel="in1", labeldistance=2, labelfontsize=9];
+
+  g_FA_X1 -> g_FA_X2 [headlabel="in0", taillabel="out0", labeldistance=2, labelfontsize=9];
+  g_FA_X1 -> g_FA_A2 [headlabel="in0", taillabel="out0", labeldistance=2, labelfontsize=9];
+  g_FA_A1 -> g_FA_OR [headlabel="in0", taillabel="out0", labeldistance=2, labelfontsize=9];
+  g_FA_A2 -> g_FA_OR [headlabel="in1", taillabel="out0", labeldistance=2, labelfontsize=9];
+
+  out_FA_X2 [label="SUM = 0", shape=oval, fillcolor="#e3f2fd", color="#9e9e9e", penwidth=1.8];
+  g_FA_X2 -> out_FA_X2 [color="#9e9e9e", penwidth=1.2];
+  out_FA_OR [label="Cout = 1", shape=oval, fillcolor="#e3f2fd", color="#1565c0", penwidth=1.8];
+  g_FA_OR -> out_FA_OR [color="#1565c0", penwidth=2.2];
+}

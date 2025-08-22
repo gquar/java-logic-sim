@@ -1,5 +1,4 @@
 package sim.core;
-
 /**
  * A 1-input NOT logic gate (inverter).
  * 
