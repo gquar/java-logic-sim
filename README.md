@@ -126,10 +126,12 @@ System.out.println(c.readPrimaryOutputs().get(0));
 
 ![Full Adder](docs/fa.png)
 
-**Legend**
-- Ovals display the **resolved output value** (e.g., `SUM = 1`, `Cout = 0`).
-- Edge to each output oval is **blue & bold** for `1` and **gray** for `0`.
-- Gate boxes show the **type**, and only include the gate id if it differs from the type (no more `AND\AND`).
+### Legend
+**Green diamonds** = primary inputs; **Blue ovals** = primary outputs. Output oval text shows resolved value (0/1). **Bold blue edge** = 1, **gray edge** = 0.
+- **Green diamonds**: primary inputs.  
+- **Blue ovals**: primary outputs (label shows resolved value).  
+- **Boxes**: gates (AND / OR / NOT / XOR / LUT).  
+- **Edge color**: bold blue = logic 1; gray = logic 0.  
 
 Regenerate:
 ```bash
@@ -138,6 +140,116 @@ Regenerate:
 # or both:
 ./gradlew :lib:dotAll
 ```
+
+## Grid frames (AE-ready)
+
+Generate a **2D boolean grid** per frame (PNG) plus a CSV of outputs:
+
+```bash
+./gradlew :lib:reg2Grid
+```
+
+**Files:**
+- `docs/frames_grid/reg_00.png` … `reg_03.png`
+- `docs/frames_grid/frames.csv` (columns: `frame,q0,q1`)
+
+**Why:** these are simple image-sequence frames you can import into After Effects for a clean, program-generated animation (no hand-drawn fakes). Each title line encodes Q0/Q1 so the result is self-describing.
+
+## LUT + FPGA-lite
+
+**Configurable 3-input lookup tables** demonstrate FPGA-style logic synthesis. Each LUT3 stores an 8-bit truth table mask, enabling arbitrary boolean functions.
+
+```bash
+./gradlew :lib:lutDot  # auto-opens docs/lut_fabric.png
+```
+
+![LUT Fabric](docs/lut_fabric.png)
+
+## Threshold Mask (image→grid)
+
+Convert images to boolean grids via **grayscale thresholding**:
+
+```bash
+./gradlew :lib:threshold -- --in image.png --threshold 128 --out docs/threshold/out.png
+```
+
+**Features:** luma conversion, invert option, CSV export. Perfect for OCR preprocessing or binary image analysis.
+
+## 3D LUT (.cube)
+
+**FPGA-like ROM mapping** for color transformations. Generate LUTs from source/target image pairs, apply to new images:
+
+```bash
+# Generate LUT from image pair
+java -cp lib/build/classes/java/main sim.image.lut.CubeCLI generate --src before.png --tgt after.png --size 17 --out lut.cube --preview preview.png
+
+# Apply LUT to image
+java -cp lib/build/classes/java/main sim.image.lut.CubeCLI apply --in input.png --cube lut.cube --out output.png
+```
+
+**Concept demo:** `./gradlew :lib:lutCubeDot` shows R,G,B → LUT3D → R',G',B' schematic.
+
+### 3D Color-Grading LUT (.cube) — Auto Size Selection
+
+Learn a LUT from a matched pair of images (Source=ungraded, Target=graded). Optimize LUT size by sweeping (e.g., 9,17,33) and picking the smallest meeting a PSNR goal (default 36 dB).
+
+**Commands:**
+```bash
+# Optimize size and generate outputs
+./gradlew :lib:lutOptimize
+
+# (Example) Generate a 17³ LUT and apply it:
+java -cp lib/build/libs/lib-*.jar sim.image.lut.CubeCLI generate --src docs/samples/src.png --tgt docs/samples/tgt.png --size 17 --out docs/lut/cube_17.cube --preview docs/lut/cube_17_preview.png
+java -cp lib/build/libs/lib-*.jar sim.image.lut.CubeCLI apply --in docs/samples/new.png --cube docs/lut/cube_17.cube --out docs/lut/applied.png
+
+# (Optional) Plot error vs size (requires matplotlib):
+python3 tools/plot_lut_opt.py docs/lut_opt/results.csv docs/lut_opt/plot.png
+```
+
+**Practical notes:**
+- Assumes sRGB. For learning & interpolation we may switch to linear in a future version.
+- Best results when the Source/Target are the same scene, same resolution, no geometric edits.
+
+**Validation Support:**
+Validation images help prevent overfitting to the training data. When training and testing on the same image pair, PSNR can be ∞ for all sizes, making size selection difficult.
+
+```bash
+# With validation images
+./gradlew :lib:lutOptimize -PvalSrc=docs/samples/val_src.png -PvalTgt=docs/samples/val_tgt.png
+python3 tools/plot_lut_opt.py docs/lut_opt/results.csv docs/lut_opt/plot.png
+```
+
+The validation PSNR will typically be lower than training PSNR, providing a clearer size/quality tradeoff for optimization.
+
+### Nearest vs Trilinear Interpolation
+
+Compare interpolation methods for LUT application:
+
+```bash
+./gradlew :lib:lutCompare
+```
+
+This generates side-by-side comparison images showing the difference between nearest neighbor and trilinear interpolation. Trilinear typically produces smoother gradients with fewer quantization artifacts, especially for small LUT sizes.
+
+### Netlist DSL (tiny)
+
+Parse and execute simple netlist descriptions:
+
+```bash
+# Example netlist (docs/samples/adder1.nl):
+INPUTS A,B,Cin
+X1 = XOR(A,B)
+SUM = XOR(X1,Cin)
+C1  = AND(A,B)
+C2  = AND(X1,Cin)
+Cout= OR(C1,C2)
+OUTPUTS SUM,Cout
+
+# Run demo:
+./gradlew :lib:netlistDemo
+```
+
+The DSL supports AND, OR, NOT, XOR gates with named inputs/outputs and optional Graphviz visualization.
 ```markdown
 <details><summary>Mermaid (browser-native)</summary>
 

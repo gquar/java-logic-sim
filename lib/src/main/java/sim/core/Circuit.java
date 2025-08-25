@@ -290,4 +290,23 @@ public List<Gate> topologicalOrder() {
     public List<Wire> getWires() {
         return new ArrayList<>(wires);
     }
+    
+    /**
+     * Performs a complete clock cycle: low→high→low with propagate() on each step.
+     * 
+     * <p>This method:
+     * 1. Sets the clock to false and propagates
+     * 2. Sets the clock to true and propagates (rising edge)
+     * 3. Sets the clock to false and propagates
+     * 
+     * @param clkName the name of the clock primary input
+     */
+    public void tick(String clkName) {
+        setPrimaryInput(clkName, false);
+        propagate();
+        setPrimaryInput(clkName, true);
+        propagate(); // rising edge
+        setPrimaryInput(clkName, false);
+        propagate();
+    }
 }

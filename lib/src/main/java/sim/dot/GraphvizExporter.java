@@ -7,6 +7,8 @@ import sim.core.AndGate;
 import sim.core.OrGate;
 import sim.core.NotGate;
 import sim.core.XorGate;
+import sim.core.LUT3;
+import sim.core.seq.DFlipFlop;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -131,6 +133,8 @@ public final class GraphvizExporter {
         if (g instanceof OrGate)  return "#e8eaf6";
         if (g instanceof NotGate) return "#fce4ec";
         if (g instanceof XorGate) return "#e0f7fa";
+        if (g instanceof LUT3) return "#f3e5f5"; // soft purple for LUTs
+        if (g instanceof DFlipFlop) return "#fff3e0"; // soft orange for sequential elements
         return "#f6f6f6";
     }
 }

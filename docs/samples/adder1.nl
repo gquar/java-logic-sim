@@ -1,0 +1,7 @@
+INPUTS A,B,Cin
+X1 = XOR(A,B)
+SUM = XOR(X1,Cin)
+C1  = AND(A,B)
+C2  = AND(X1,Cin)
+Cout= OR(C1,C2)
+OUTPUTS SUM,Cout

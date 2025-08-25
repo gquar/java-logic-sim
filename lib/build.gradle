@@ -57,6 +57,82 @@ tasks.register('faDot', JavaExec) {
     mainClass = 'sim.demo.GraphvizFADemo'
 }
 
+tasks.register('reg2Frames', JavaExec) {
+    group = 'demo'
+    description = 'Generate 2-bit register tick frames'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'sim.demo.Reg2Demo'
+}
+
+tasks.register('reg2Grid', JavaExec) {
+    group = 'demo'
+    description = 'Generate 2D-array grid frames (PNG) and frames.csv for the 2-bit register'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'sim.demo.Reg2GridFrames'
+}
+
+tasks.register('lutDot', JavaExec) {
+    group = 'demo'
+    description = 'Generate LUT fabric diagram'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'sim.demo.LUTFabricDemo'
+}
+
+tasks.register('threshold', JavaExec) {
+    group = 'demo'
+    description = 'Convert image to boolean grid via thresholding'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'sim.image.ThresholdCLI'
+    args = ['--in', 'docs/threshold/test.png', '--out', 'docs/threshold/result.png', '--threshold', '128']
+}
+
+tasks.register('lutCubeDot', JavaExec) {
+    group = 'demo'
+    description = 'Generate 3D LUT concept diagram'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'sim.demo.LUTCubeDiagram'
+}
+
+tasks.register('lutSamples', JavaExec) {
+    group = 'demo'
+    description = 'Generate sample images for LUT optimization testing'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'sim.demo.LUTSampleGenerator'
+}
+
+
+
+tasks.register('lutOptimize', JavaExec) {
+    group = 'demo'
+    description = 'Run LUT optimization demo with example images'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'sim.image.lut.CubeCLI'
+    args = ['optimize', '--src', 'docs/samples/src.png', '--tgt', 'docs/samples/tgt.png', 
+            '--val-src', 'docs/samples/val_src.png', '--val-tgt', 'docs/samples/val_tgt.png',
+            '--sizes', '9,17,33', '--goal-psnr', '36', '--out-dir', 'docs/lut_opt', '--csv', 'docs/lut_opt/results.csv']
+    dependsOn 'lutSamples'
+    
+    // Note: Warning about infinite validation PSNR is handled in the Java code
+    // The CSV output will show "inf" for infinite values, which can be checked manually
+}
+
+tasks.register('lutCompare', JavaExec) {
+    group = 'demo'
+    description = 'Compare nearest neighbor vs trilinear interpolation'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'sim.demo.LUTCompareDemo'
+    dependsOn 'lutSamples'
+}
+
+tasks.register('netlistDemo', JavaExec) {
+    group = 'demo'
+    description = 'Run netlist DSL demo with full adder'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'sim.cli.netlist.NetlistCLI'
+    workingDir = project.rootDir
+    args = ['--file', 'docs/samples/adder1.nl', '--set', 'A=true,B=true,Cin=false', '--dot', 'docs/adder1.dot']
+}
+
 tasks.register('dotAll') {
     group = 'demo'
     description = 'Generate both logic and full-adder Graphviz images'

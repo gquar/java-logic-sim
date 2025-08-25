@@ -1,11 +1,7 @@
 package sim.demo;
 
 import sim.core.*;
-import sim.dot.GraphvizExporter;
 
-import java.awt.Desktop;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class GraphvizDemo {
     public static void main(String[] args) throws Exception {

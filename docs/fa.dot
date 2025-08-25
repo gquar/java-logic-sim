@@ -7,11 +7,11 @@ digraph Logic {
   in_B [label="B\nINPUT", shape=diamond, fillcolor="#e8f5e9", color="#2e7d32", penwidth=1.5];
   in_Cin [label="Cin\nINPUT", shape=diamond, fillcolor="#e8f5e9", color="#2e7d32", penwidth=1.5];
 
-  g_FA_X1 [label="Xor\nFA_X1", fillcolor="#e0f7fa"];
-  g_FA_A1 [label="And\nFA_A1", fillcolor="#fff4e5"];
-  g_FA_X2 [label="Xor\nFA_X2", fillcolor="#e0f7fa"];
-  g_FA_A2 [label="And\nFA_A2", fillcolor="#fff4e5"];
-  g_FA_OR [label="Or\nFA_OR", fillcolor="#e8eaf6"];
+  g_FA_X1 [label="XOR\n(FA_X1)", fillcolor="#e0f7fa"];
+  g_FA_A1 [label="AND\n(FA_A1)", fillcolor="#fff4e5"];
+  g_FA_X2 [label="XOR\n(FA_X2)", fillcolor="#e0f7fa"];
+  g_FA_A2 [label="AND\n(FA_A2)", fillcolor="#fff4e5"];
+  g_FA_OR [label="OR\n(FA_OR)", fillcolor="#e8eaf6"];
 
   in_A -> g_FA_X1 [taillabel="A", headlabel="in0", labeldistance=2, labelfontsize=9];
   in_A -> g_FA_A1 [taillabel="A", headlabel="in0", labeldistance=2, labelfontsize=9];

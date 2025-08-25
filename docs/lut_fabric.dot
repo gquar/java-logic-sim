@@ -1,0 +1,25 @@
+digraph Logic {
+  graph [rankdir=LR, nodesep=0.4, ranksep=0.6];
+  node  [shape=box, style=filled, fillcolor="#f6f6f6", color="#555555", fontname=Helvetica, fontsize=10];
+  edge  [color="#333333", arrowsize=0.7];
+
+  in_A [label="A\nINPUT", shape=diamond, fillcolor="#e8f5e9", color="#2e7d32", penwidth=1.5];
+  in_B [label="B\nINPUT", shape=diamond, fillcolor="#e8f5e9", color="#2e7d32", penwidth=1.5];
+  in_Cin [label="Cin\nINPUT", shape=diamond, fillcolor="#e8f5e9", color="#2e7d32", penwidth=1.5];
+
+  g_L_SUM [label="LUT3\n(L_SUM)", fillcolor="#f3e5f5"];
+  g_L_COUT [label="LUT3\n(L_COUT)", fillcolor="#f3e5f5"];
+
+  in_A -> g_L_SUM [taillabel="A", headlabel="in0", labeldistance=2, labelfontsize=9];
+  in_A -> g_L_COUT [taillabel="A", headlabel="in0", labeldistance=2, labelfontsize=9];
+  in_B -> g_L_SUM [taillabel="B", headlabel="in1", labeldistance=2, labelfontsize=9];
+  in_B -> g_L_COUT [taillabel="B", headlabel="in1", labeldistance=2, labelfontsize=9];
+  in_Cin -> g_L_SUM [taillabel="Cin", headlabel="in2", labeldistance=2, labelfontsize=9];
+  in_Cin -> g_L_COUT [taillabel="Cin", headlabel="in2", labeldistance=2, labelfontsize=9];
+
+
+  out_L_SUM [label="SUM = 0", shape=oval, fillcolor="#e3f2fd", color="#9e9e9e", penwidth=1.8];
+  g_L_SUM -> out_L_SUM [color="#9e9e9e", penwidth=1.2];
+  out_L_COUT [label="Cout = 1", shape=oval, fillcolor="#e3f2fd", color="#1565c0", penwidth=1.8];
+  g_L_COUT -> out_L_COUT [color="#1565c0", penwidth=2.2];
+}

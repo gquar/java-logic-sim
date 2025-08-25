@@ -24,3 +24,23 @@ jobs:
             ${{ runner.os }}-gradle-
       - name: Build & Test
         run: ./gradlew clean :lib:build :lib:test --no-daemon
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install Python dependencies
+        run: pip install -r tools/requirements.txt
+      
+      - name: Run LUT optimization demo
+        run: ./gradlew :lib:lutOptimize
+      
+      - name: Generate plot
+        run: python3 tools/plot_lut_opt.py docs/lut_opt/results.csv docs/lut_opt/plot.png
+      
+      - name: Upload plot artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lut-optimization-plot
+          path: docs/lut_opt/plot.png

@@ -1,0 +1,23 @@
+digraph Logic {
+  graph [rankdir=LR, nodesep=0.4, ranksep=0.6];
+  node  [shape=box, style=filled, fillcolor="#f6f6f6", color="#555555", fontname=Helvetica, fontsize=10];
+  edge  [color="#333333", arrowsize=0.7];
+
+  in_D0 [label="D0\nINPUT", shape=diamond, fillcolor="#e8f5e9", color="#2e7d32", penwidth=1.5];
+  in_D1 [label="D1\nINPUT", shape=diamond, fillcolor="#e8f5e9", color="#2e7d32", penwidth=1.5];
+  in_CLK [label="CLK\nINPUT", shape=diamond, fillcolor="#e8f5e9", color="#2e7d32", penwidth=1.5];
+
+  g_R0 [label="DFLIPFLOP\n(R0)", fillcolor="#fff3e0"];
+  g_R1 [label="DFLIPFLOP\n(R1)", fillcolor="#fff3e0"];
+
+  in_D0 -> g_R0 [taillabel="D0", headlabel="in0", labeldistance=2, labelfontsize=9];
+  in_D1 -> g_R1 [taillabel="D1", headlabel="in0", labeldistance=2, labelfontsize=9];
+  in_CLK -> g_R0 [taillabel="CLK", headlabel="in1", labeldistance=2, labelfontsize=9];
+  in_CLK -> g_R1 [taillabel="CLK", headlabel="in1", labeldistance=2, labelfontsize=9];
+
+
+  out_R0 [label="Q0 = 0", shape=oval, fillcolor="#e3f2fd", color="#9e9e9e", penwidth=1.8];
+  g_R0 -> out_R0 [color="#9e9e9e", penwidth=1.2];
+  out_R1 [label="Q1 = 1", shape=oval, fillcolor="#e3f2fd", color="#1565c0", penwidth=1.8];
+  g_R1 -> out_R1 [color="#1565c0", penwidth=2.2];
+}
