@@ -1,5 +1,4 @@
 package sim.core;
-
 /**
  * A 2-input XOR (exclusive OR) logic gate.
  * 
